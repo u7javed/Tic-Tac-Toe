@@ -37,7 +37,7 @@ var piRun = 1;
 Preload certain assets
 */
 function preload() {
-	googleFontCourierPrime = loadFont("assets/CourierPrime-Bold.ttf");
+	googleFontCourierPrime = loadFont("CourierPrime-Bold.ttf");
 }
 
 function resetVariables() {
