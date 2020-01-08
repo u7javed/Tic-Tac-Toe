@@ -420,7 +420,8 @@ function titleScreen() {
 	//developer
 	fill(255);
 	textSize(40);
-	text("UMER J.", width/2, height - 10);
+	fill(0, 255, 255);
+	text("UMER J.", width/2, 120);
 	pop();
 }
 
