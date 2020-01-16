@@ -1,8 +1,10 @@
+//player grid
 var grid = [
 	[0,0,0],
 	[0,0,0],
 	[0,0,0],
 ];
+
 var boxSize = 350/3;
 var playerTurn = 'O';
 var playerFirst = 'O';
@@ -22,12 +24,12 @@ var xoScore = 0;
 //game font
 var googleFontCourierPrime;
 
-//game screens
+//different game screens
 var titleScreenRunning = true;
 var playerGameRunning = false;
 var playerVsAIgameRunning = false;
 
-//winner
+//winner animation variables
 var lineXi = 0, lineXf = 0, lineYi = 0, lineYf = 0;
 
 //grid animation
@@ -40,12 +42,18 @@ function preload() {
 	googleFontCourierPrime = loadFont("CourierPrime-Bold.ttf");
 }
 
+/*
+reset game variables when restarting
+or when return to menu
+*/
 function resetVariables() {
 	grid = [
 		[0,0,0],
 		[0,0,0],
 		[0,0,0],
 	];
+	//this processes ensures either X or O doesn't always
+	//go first
 	if(playerFirst == 'O') {
 		playerTurn = 'O';
 		playerFirst = 'X';
@@ -54,6 +62,7 @@ function resetVariables() {
 		playerFirst = 'O';
 	}
 
+//if return to menu screen, reset score variables
 	if(titleScreenRunning) {
 		xScore = 0;
 		oScore = 0;
@@ -83,13 +92,18 @@ function mousePressed() {
 		}
 		//change difficulty
 		else if(mouseX >= 70 && mouseX <= 380 && mouseY >= 500 && mouseY <= 522) {
+			//pick from two difficulties
 			if(difficulty == 1) {
 				difficulty = 0;
 			} else {
 				difficulty = 1;
 			}
 		}
+		//while there is a game going on and no winners or tie between 2 players
 	} else if(playerGameRunning && !oWin && !xWin && !tie) {
+		/*
+		This is where an X or an O is placed during
+		*/
 		//grid 1
 		if(mouseX >= 40 && mouseX <= (40 + boxSize) && mouseY >= 50 && mouseY <= (50 + boxSize)) {
 			if(!grid[0][0]) {
@@ -216,16 +230,19 @@ function mousePressed() {
 				}
 			}
 		}
-
+		//if there is a winner
 	} else if((playerGameRunning || playerVsAIgameRunning) && (xWin || oWin || tie)) {
-		if(mouseX >= 70 && mouseX <= 380 && mouseY >= 612 && mouseY <= 657) {
+		//if play again button is hit
+		if(mouseX >= 70 && mouseX <= 380 && mouseY >= 600 && mouseY <= 645) {
 			resetVariables();
-		} else if(mouseX >= 150 && mouseX <= 300 && mouseY >= 715 && mouseY <= 755) {
+			//if exit button is hit
+		} else if(mouseX >= 150 && mouseX <= 300 && mouseY >= 665 && mouseY <= 705) {
 			playerGameRunning = false;
 			playerVsAIgameRunning = false;
 			titleScreenRunning = true;
 			resetVariables();
 		}
+		//if there is a game against the AI and there are no winners
 	} else if(playerVsAIgameRunning && !xWin && !oWin && !tie) {
 		if(mouseX >= 40 && mouseX <= (40 + boxSize) && mouseY >= 50 && mouseY <= (50 + boxSize)) {
 			if(!grid[0][0]) {
@@ -301,6 +318,7 @@ function mousePressed() {
 	}
 }
 
+//O object
 function Ellipse(x, y, radius) {
 	this.x = x;
 	this.y = y;
@@ -308,11 +326,13 @@ function Ellipse(x, y, radius) {
 	this.runAnimation = true;
 	this.loop = 0.1;
 
+	//animation and display object on the canvas
 	this.show = function() {
 		push();
 		noFill();
 		strokeWeight(5);
 		stroke(10, 240, 12);
+		//looping animation
 		arc(this.x, this.y, this.radius, this.radius, 0, this.loop);
 		if(this.runAnimation) {
 			arc(this.x, this.y, this.radius, this.radius, 0, this.loop);
@@ -327,22 +347,27 @@ function Ellipse(x, y, radius) {
 	}
 }
 
+//X object
 function Xmark(xi, yi, xf, yf) {
+	//x top position
 	this.xi = xi + 30;
 	this.yi = yi + 30;
 	this.xf = xf - 30;
 	this.yf = yf - 30;
 	this.runAnimation = true;
 
+	//x bottom position
 	this.xi1 = xf - 30;
 	this.yi1 = yf - 30;
 	this.xf2 = xi + 30;
 	this.yf2 = yi + boxSize - 30;
 
+	//animation and display object on canvas
 	this.show = function() {
 		push();
 		stroke(250, 10, 12);
 		strokeWeight(5);
+		//animations
 		line(this.xi1, this.yi1, this.xf, this.yf);
 		line(this.xi, this.yi + boxSize - 60, this.xf2, this.yf2);
 		if(this.runAnimation) {
@@ -363,23 +388,37 @@ function Xmark(xi, yi, xf, yf) {
 	}
 }
 
+/*
+	run function
+*/
 function setup() {
-	createCanvas(450, 800);
+	createCanvas(450, 720);
 }
 
+/*
+ p5 dom event loop function which allows for animation displays
+ on the canvas.
+*/
 function draw() {
 	background(0);
+	//if on menu screen
 	if(titleScreenRunning) {
 		titleScreen();
 	}
+	//if player vs player
 	if(playerGameRunning) {
+		//generate board
 		drawBoard();
+		//if there is a winner
 		if(xWin || oWin || tie) {
+			//finish screen
 			finishScreen(lineXi, lineYi, lineXf, lineYf);
 		} else {
+			//run the game
 			play();
 		}
 	}
+	//player vs ai
 	if(playerVsAIgameRunning) {
 		drawBoard();
 		if(xWin || oWin || tie) {
@@ -391,8 +430,9 @@ function draw() {
 }
 
 function titleScreen() {
-	//title
+	//encapsulate stylistic settings that is what push does
 	push();
+	//title
 	textFont(googleFontCourierPrime);
 	textSize(50);
 	textAlign(CENTER);
@@ -402,11 +442,11 @@ function titleScreen() {
 	//selections
 	rect(70, 270, 310, 40, 10);
 	rect(100, 420, 250, 40, 10);
-
 	fill(0);
 	textSize(30);
 	text("PLAYER vs PLAYER", width/2, 300);
 	text("PLAYER vs AI", width/2, 450);
+	//the difficulty display ie. MINIMAX OR EASY
 	if(difficulty == 1) {
 		fill(200, 10, 10);
 		text("-> MINIMAX ALGORITHM", width/2, 520);
@@ -417,11 +457,12 @@ function titleScreen() {
 
 
 
-	//developer
+	//developer name
 	fill(255);
 	textSize(40);
 	fill(0, 255, 255);
 	text("UMER J.", width/2, 130);
+	//pop ends the boundary of encapsulation of stylistic variables and settings
 	pop();
 }
 
@@ -463,7 +504,7 @@ function drawBoard() {
 	line(385, 495, 392, 495);
 	pop();
 
-
+	//change X and O variables for Animation Purposes
 	if(yRun <= 369) {
 		yRun += 20;
 	} else {
@@ -482,15 +523,20 @@ function drawBoard() {
 		xRun = 370;
 	}
 
+	//show ellipse or O spots on the grid
 	for(let ell of oPlayer) {
 		ell.show();
 	}
+	//show X spots on the grid
 	for(let x of xPlayer) {
 		x.show();
 	}
 
 }
 
+/*
+	run the tic tac toe game
+*/
 function play() {
 	var oCheck = 0;
 	var xCheck = 0;
@@ -619,13 +665,16 @@ function play() {
 				}
 			}
 		}
+		//if no winner and all 9 spots are taken
 		if(tieScore == 9) {
 			tie = true;
 		}
 	}
+	//PLAYER for AI is always X thus when o turn, AI plays
 	if(playerTurn == 'O' && playerVsAIgameRunning && !xWin && !oWin && !tie) {
 		AImove();
 	}
+	//add score depending on who wins or if tie
 	if(oWin) oScore++;
 	if(xWin) xScore++;
 	if(tie) {
@@ -633,69 +682,90 @@ function play() {
 	}
 }
 
+//minimax algorithm
 function AImove() {
-		var bestHeuristic = -Infinity;
+		//start off with lowest possible score
+		var bestResult = -Infinity;
 		var nextMove;
 		for(var i = 0; i < 3; i++) {
 			for(var j = 0; j < 3; j++) {
 				//if spot is available
 				if(grid[i][j] == 0) {
 					grid[i][j] = 1;
-					var heuristic = minimax(grid, 0, false);
+					//result here represents the ideal value.
+					//based on the score given to each play recursively tested
+					//is how the minimax AI decides its next nextMove
+					var result = minimax(grid, 0, false);
 					grid[i][j] = 0;
-					if(heuristic > bestHeuristic) {
-						bestHeuristic = heuristic;
+					//if calculated score or heurisitc
+					if(result > bestResult) {
+						bestResult = result;
 						nextMove = {i,j};
 					}
 				}
 			}
 		}
+		//the grid of which the move is taken is used up
 		grid[nextMove.i][nextMove.j] = 1;
 		playerTurn = 'X';
+		//push o where the AI decided to play
 		oPlayer.push(new Ellipse(40 + nextMove.j*10 + nextMove.j*boxSize + boxSize/2, 50 + nextMove.i*10 + nextMove.i*boxSize + boxSize/2, boxSize/2, boxSize/2));
 }
 
-var heuristics = {
+//possible score holder
+var results = {
 	1: 1,
 	2: -1,
 	3: 0
 }
 
+/*
+ the bulk of the AI algorithm
+*/
 function minimax(grid, depth, isMaximizing) {
+	//first check if has AI won (possibly from previous recursive calls)
 	var result = checkAIWin();
+	//if so, return the result
 	if(result != null) {
-		return heuristics[result];
+		return results[result];
 	}
+	//if the algorithm is checking its OWN Turn meaning
+	//the AI is trying its b
 	if(isMaximizing) {
-		var bestHeuristic = -Infinity;
+		var bestResult = -Infinity;
 		for(var i = 0; i < 3; i++) {
 			for(var j = 0; j < 3; j++) {
+				//check each available grid throug recursion
 				if(grid[i][j] == 0) {
 					grid[i][j] = 1;
-					var heuristic = minimax(grid, depth + 1, false);
+					//call minimax on first open grid
+					var result = minimax(grid, depth + 1, false);
 					grid[i][j] = 0;
-					if(heuristic > bestHeuristic) {
-						bestHeuristic = heuristic;
+					if(result > bestResult) {
+						bestResult = result;
 					}
 				}
 			}
 		}
-		return bestHeuristic;
+		//return the best result
+		return bestResult;
+		//this time the algorithm plays in the few of the players
+		//to ensure
 	} else {
-		var bestHeuristic = Infinity;
+		var bestResult = Infinity;
 		for(var i = 0; i < 3; i++) {
 			for(var j = 0; j < 3; j++) {
 				if(grid[i][j] == 0) {
 					grid[i][j] = 2;
-					var heuristic = minimax(grid, depth + 1, true);
+					var result = minimax(grid, depth + 1, true);
 					grid[i][j] = 0;
-					if(heuristic < bestHeuristic) {
-						bestHeuristic = heuristic;
+					if(result < bestResult) {
+						bestResult = result;
 					}
 				}
 			}
 		}
-		return bestHeuristic;
+		return bestResult;
 	}
 }
 
@@ -793,10 +863,13 @@ function checkAIWin() {
 		}
 }
 
+//when game is done
 function finishScreen(xi, yi, xf, yf) {
+	//if there was a winner
 	if(!tie) {
 		push();
 		strokeWeight(5);
+		//create a line through the winner row or col or diagonal
 		if(playerVsAIgameRunning && xWin) {
 			stroke(10, 200, 10);
 		} else {
@@ -811,12 +884,15 @@ function finishScreen(xi, yi, xf, yf) {
 	textSize(50);
 	textAlign(CENTER);
 	fill(255);
+	//if x won, display X WINS
+	// or if user wins against AI
 	if(xWin) {
 		if(playerVsAIgameRunning) {
 			text("YOU WIN!", width/2, 580);
 		} else {
 			text("X WINS!", width/2, 580);
 		}
+		//if AI wins or if player O wins depending on game type
 	} else if(oWin) {
 		if(playerVsAIgameRunning) {
 			text("AI WINS!", width/2, 580);
@@ -827,10 +903,10 @@ function finishScreen(xi, yi, xf, yf) {
 		text("TIE!", width/2, 580);
 	}
 	fill(255);
-	rect(70, 612, 310, 45, 10);
-	rect(150, 715, 150, 40, 10);
+	rect(70, 600, 310, 45, 10);
+	rect(150, 665, 150, 40, 10);
 	fill(0);
-	text("PLAY AGAIN", width/2, 650);
-	text("EXIT", width/2, 750);
+	text("PLAY AGAIN", width/2, 638);
+	text("EXIT", width/2, 700);
 	pop();
 }
